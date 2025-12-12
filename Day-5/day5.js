@@ -7,6 +7,10 @@ let button3 = document.getElementById("button3");
 let button4 = document.getElementById("button4");
 let button5 = document.getElementById("button5");
 let button6 = document.getElementById("button6");
+let button7 = document.getElementById("button7");
+
+let inputName = document.getElementById("inputName");
+let inputPassword = document.getElementById("inputPassword");
 
 console.log("Script loaded");
 
@@ -34,4 +38,18 @@ button5.addEventListener("click", ()=>{
 button6.addEventListener("click", ()=>{
     heading1.style.color="black";
     heading2.style.color="black";
+});
+
+
+button7.addEventListener("click", (e)=>{
+    e.preventDefault();
+    console.log("Name: ", inputName.value);
+    console.log("Password: ", inputPassword.value);
+    if(inputName.value === "" || inputPassword.value === ""){
+        alert("Please fill all the details");
+        return;
+    }
+    alert("Form submitted");
+    inputName.value="";
+    inputPassword.value="";
 });
