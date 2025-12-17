@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="page">
+        <section class="card form-card">
+            <h1>Student Registration</h1>
+            <p>Validate inputs and show the entered details below without reloading.</p>
+
+            <form id="registerForm" novalidate>
+                <label for="fullName">Name</label>
+                <input id="fullName" name="fullName" type="text" placeholder="Rahul">
+
+                <label for="regEmail">Email</label>
+                <input id="regEmail" name="email" type="email" placeholder="rahul@gmail.com" autocomplete="email">
+
+                <label for="regPassword">Password</label>
+                <input id="regPassword" name="password" type="password" placeholder="At least 6 characters" autocomplete="new-password">
+
+                <label>Gender</label>
+                <div class="checkbox-group" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));">
+                    <label><input type="radio" name="gender" value="Male">Male</label>
+                    <label><input type="radio" name="gender" value="Female">Female</label>
+                    <label><input type="radio" name="gender" value="Other">Other</label>
+                </div>
+
+                <label for="course">Course</label>
+                <select id="course" name="course">
+                    <option value="">Select a course</option>
+                    <option value="JavaScript">JavaScript</option>
+                    <option value="HTML">HTML</option>
+                    <option value="CSS">CSS</option>
+                    <option value="React">React</option>
+                </select>
+
+                <label>
+                    <input id="terms" name="terms" type="checkbox">
+                    I agree to the Term & Conditions
+                </label>
+
+                <div class="actions">
+                    <button type="submit">Submit</button>
+                    <button type="reset">Clear</button>
+                </div>
+            </form>
+
+            <div id="registerStatus" class="status" aria-live="polite"></div>
+            <small>Already registered? <a href="login.html">Go to login</a></small>
+        </section>
+    </div>
+
+    <script>
+        const registerForm = document.getElementById("registerForm");
+        const registerStatus = document.getElementById("registerStatus");
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/ 
+;
+
+        registerForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+            registerStatus.className = "status";
+            registerStatus.textContent = "";
+
+            const fullName = registerForm.fullName.value.trim();
+            const email = registerForm.email.value.trim();
+            const password = registerForm.password.value.trim();
+            const gender = registerForm.gender.value;
+            const course = registerForm.course.value;
+            const termsAccepted = registerForm.terms.checked;
+
+            const errors = [];
+
+            if (!fullName) errors.push("Name Should not be empty.");
+            if (!email) {
+                errors.push("Email is required.");
+            } else if (!emailPattern.test(email)) {
+                errors.push("Email should be valid.");
+            }
+            if (!password) {
+                errors.push("Password is required.");
+            } else if (password.length < 6) {
+                errors.push("Password must be at least 6 characters.");
+            }
+            if (!gender) errors.push("Gender must be selected.");
+            if (!course) errors.push("Course must be selected.");
+            if (!termsAccepted) {
+                errors.push("Terms checkbox must be checked");
+            }
+
+            if (errors.length > 0) {
+                registerStatus.classList.add("error");
+                registerStatus.innerHTML = "<ul><li>" + errors.join("</li><li>") + "</li></ul>";
+                return;
+            }
+
+            // Persist to browser storage so login can validate.
+            const record = {
+                name: fullName,
+                email,
+                password,
+                gender,
+                course
+            };
+            try {
+                localStorage.setItem("registeredUser", JSON.stringify(record));
+            } catch (err) {
+                registerStatus.classList.add("error");
+                registerStatus.innerHTML = "Could not save locally. Please check storage permissions.";
+                return;
+            }
+
+            registerStatus.classList.add("success");
+            registerStatus.innerHTML = `
+                <strong>Registration Successful!</strong>
+                <div>Name: ${fullName}</div>
+                <div>Email: ${email}</div>
+                <div>Gender: ${gender}</div>
+                <div>Course: ${course}</div>
+            `;
+        });
+
+        registerForm.addEventListener("reset", () => {
+            registerStatus.className = "status";
+            registerStatus.textContent = "";
+        });
+    </script>
+</body>
+</html>

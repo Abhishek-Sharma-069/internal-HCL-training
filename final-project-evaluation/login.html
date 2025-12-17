@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="page">
+        <section class="card form-card">
+            <h1>Login</h1>
+            <p>Enter your email, password, and role. Validation happens without reload.</p>
+
+            <form id="loginForm" novalidate>
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email">
+
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" placeholder="At least 6 characters" autocomplete="current-password">
+
+                <label for="role">Role</label>
+                <select id="role" name="role">
+                    <option value="">Select your role</option>
+                    <option value="student">Student</option>
+                    <option value="trainer">Trainer</option>
+                    <option value="guest">Guest</option>
+                </select>
+
+                <label>
+                    <input id="remember" name="remember" type="checkbox">
+                    Remember me on this device
+                </label>
+
+                <div class="actions">
+                    <button type="submit">Submit</button>
+                    <button type="reset">Clear</button>
+                </div>
+            </form>
+
+            <div id="loginStatus" class="status" aria-live="polite"></div>
+            <small>Need an account? <a href="register.html">Go to register</a></small>
+        </section>
+    </div>
+
+    <script>
+        const form = document.getElementById("loginForm");
+        const statusBox = document.getElementById("loginStatus");
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/ ;
+
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            statusBox.className = "status";
+            statusBox.textContent = "";
+
+            const email = form.email.value.trim();
+            const password = form.password.value.trim();
+            const role = form.role.value;
+            const remember = form.remember.checked;
+
+            const errors = [];
+            if (!email) {
+                errors.push("Email is required.");
+            } else if (!emailPattern.test(email)) {
+                errors.push("Email should be valid.");
+            }
+
+            if (!password) {
+                errors.push("Password is required.");
+            } else if (password.length < 6) {
+                errors.push("Password must be at least 6 characters.");
+            }
+
+            if (!role) {
+                errors.push("Select a role to continue.");
+            }
+
+            // Validate against browser-stored registration.
+            let storedUser = null;
+            try {
+                const raw = localStorage.getItem("registeredUser");
+                storedUser = raw ? JSON.parse(raw) : null;
+            } catch (err) {
+                errors.push("Could not read saved registration. Please register again.");
+            }
+
+            if (!storedUser) {
+                errors.push("No registration found. Please register first.");
+            } else {
+                if (storedUser.email !== email || storedUser.password !== password) {
+                    errors.push("Invalid email or password.");
+                }
+            }
+
+            if (errors.length > 0) {
+                statusBox.classList.add("error");
+                statusBox.innerHTML = "<ul><li>" + errors.join("</li><li>") + "</li></ul>";
+                return;
+            }
+
+            statusBox.classList.add("success");
+            statusBox.innerHTML = `
+                <strong>Login ready!</strong>
+                <div>Email: ${email}</div>
+                <div>Name: ${storedUser ? storedUser.name : ""}</div>
+                <div>Course: ${storedUser ? storedUser.course : ""}</div>
+                <div>Role: ${role}</div>
+                <div>Remember: ${remember ? "Yes" : "No"}</div>
+            `;
+        });
+
+        form.addEventListener("reset", () => {
+            statusBox.className = "status";
+            statusBox.textContent = "";
+        });
+    </script>
+</body>
+</html>
