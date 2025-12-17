@@ -7,6 +7,14 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <header>
+        <div><strong>Web Dev Training</strong></div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+        </nav>
+    </header>
+
     <div class="page">
         <section class="card form-card">
             <h1>Student Registration</h1>
@@ -57,13 +65,26 @@
     <script>
         const registerForm = document.getElementById("registerForm");
         const registerStatus = document.getElementById("registerStatus");
-        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/ 
-;
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        let countdownTimer = null;
+        let countdownInterval = null;
+
+        const clearCountdown = () => {
+            if (countdownTimer) {
+                clearTimeout(countdownTimer);
+                countdownTimer = null;
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        };
 
         registerForm.addEventListener("submit", (event) => {
             event.preventDefault();
             registerStatus.className = "status";
             registerStatus.textContent = "";
+            clearCountdown();
 
             const fullName = registerForm.fullName.value.trim();
             const email = registerForm.email.value.trim();
@@ -97,7 +118,7 @@
                 return;
             }
 
-            // Persist to browser storage so login can validate.
+            // Persist to browser storage (support multiple users keyed by email).
             const record = {
                 name: fullName,
                 email,
@@ -106,7 +127,16 @@
                 course
             };
             try {
-                localStorage.setItem("registeredUser", JSON.stringify(record));
+                const existingRaw = localStorage.getItem("registeredUsers");
+                const list = existingRaw ? JSON.parse(existingRaw) : [];
+                const idx = list.findIndex((u) => u.email === email);
+                if (idx >= 0) {
+                    list[idx] = record;
+                } else {
+                    list.push(record);
+                }
+                localStorage.setItem("registeredUsers", JSON.stringify(list));
+                localStorage.setItem("lastRegisteredEmail", email);
             } catch (err) {
                 registerStatus.classList.add("error");
                 registerStatus.innerHTML = "Could not save locally. Please check storage permissions.";
@@ -120,12 +150,30 @@
                 <div>Email: ${email}</div>
                 <div>Gender: ${gender}</div>
                 <div>Course: ${course}</div>
+                <div id="countdown">Redirecting in 7 seconds...</div>
             `;
+
+            let remaining = 7;
+            const countdownEl = document.getElementById("countdown");
+            countdownInterval = setInterval(() => {
+                remaining -= 1;
+                if (countdownEl) countdownEl.textContent = `Redirecting in ${remaining} seconds...`;
+                if (remaining <= 0) {
+                    clearCountdown();
+                    window.location.href = "success.html";
+                }
+            }, 1000);
+
+            countdownTimer = setTimeout(() => {
+                clearCountdown();
+                window.location.href = "success.html";
+            }, 7000);
         });
 
         registerForm.addEventListener("reset", () => {
             registerStatus.className = "status";
             registerStatus.textContent = "";
+            clearCountdown();
         });
     </script>
 </body>

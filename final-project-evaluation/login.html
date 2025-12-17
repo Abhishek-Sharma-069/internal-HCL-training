@@ -7,6 +7,15 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <header>
+        <div><strong>Web Dev Training</strong></div>
+        <nav>
+            <a href="index.html">Home</a>
+
+            <a href="register.html">Register</a>
+        </nav>
+    </header>
+
     <div class="page">
         <section class="card form-card">
             <h1>Login</h1>
@@ -46,12 +55,26 @@
     <script>
         const form = document.getElementById("loginForm");
         const statusBox = document.getElementById("loginStatus");
-        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/ ;
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        let countdownTimer = null;
+        let countdownInterval = null;
+
+        const clearCountdown = () => {
+            if (countdownTimer) {
+                clearTimeout(countdownTimer);
+                countdownTimer = null;
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        };
 
         form.addEventListener("submit", (event) => {
             event.preventDefault();
             statusBox.className = "status";
             statusBox.textContent = "";
+            clearCountdown();
 
             const email = form.email.value.trim();
             const password = form.password.value.trim();
@@ -78,8 +101,9 @@
             // Validate against browser-stored registration.
             let storedUser = null;
             try {
-                const raw = localStorage.getItem("registeredUser");
-                storedUser = raw ? JSON.parse(raw) : null;
+                const raw = localStorage.getItem("registeredUsers");
+                const list = raw ? JSON.parse(raw) : [];
+                storedUser = list.find((u) => u.email === email && u.password === password) || null;
             } catch (err) {
                 errors.push("Could not read saved registration. Please register again.");
             }
@@ -106,12 +130,36 @@
                 <div>Course: ${storedUser ? storedUser.course : ""}</div>
                 <div>Role: ${role}</div>
                 <div>Remember: ${remember ? "Yes" : "No"}</div>
+                <div id="loginCountdown">Redirecting in 7 seconds...</div>
             `;
+
+            try {
+                localStorage.setItem("currentUserEmail", email);
+            } catch (err) {
+                // non-fatal; proceed without storing
+            }
+
+            let remaining = 7;
+            const countdownEl = document.getElementById("loginCountdown");
+            countdownInterval = setInterval(() => {
+                remaining -= 1;
+                if (countdownEl) countdownEl.textContent = `Redirecting in ${remaining} seconds...`;
+                if (remaining <= 0) {
+                    clearCountdown();
+                    window.location.href = "login-success.html";
+                }
+            }, 1000);
+
+            countdownTimer = setTimeout(() => {
+                clearCountdown();
+                window.location.href = "login-success.html";
+            }, 7000);
         });
 
         form.addEventListener("reset", () => {
             statusBox.className = "status";
             statusBox.textContent = "";
+            clearCountdown();
         });
     </script>
 </body>

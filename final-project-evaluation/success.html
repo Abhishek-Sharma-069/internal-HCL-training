@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Complete</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div><strong>Web Dev Training</strong></div>
+        <nav>
+            <a href="index.html">Home</a>
+        </nav>
+    </header>
+
+    <div class="page">
+        <section class="card form-card" id="successCard">
+            <h1>Registration Status</h1>
+            <div id="successMessage" class="status success"></div>
+        </section>
+    </div>
+
+    <script>
+        const messageBox = document.getElementById("successMessage");
+        try {
+            const listRaw = localStorage.getItem("registeredUsers");
+            const list = listRaw ? JSON.parse(listRaw) : [];
+            const lastEmail = localStorage.getItem("lastRegisteredEmail");
+            const user = list.find((u) => u.email === lastEmail) || list[list.length - 1];
+            if (user && user.name) {
+                messageBox.innerHTML = `
+                    <strong>Dear ${user.name}, registration done!</strong>
+                    <div>Email: ${user.email || "N/A"}</div>
+                    <div>Gender: ${user.gender || "N/A"}</div>
+                    <div>Course: ${user.course || "N/A"}</div>
+                `;
+            } else {
+                messageBox.className = "status error";
+                messageBox.textContent = "No registration data found. Please register again.";
+            }
+        } catch (err) {
+            messageBox.className = "status error";
+            messageBox.textContent = "Could not read saved data. Please register again.";
+        }
+    </script>
+</body>
+</html>
+
